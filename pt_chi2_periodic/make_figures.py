@@ -319,7 +319,8 @@ def fig_validation():
 def svg_to_png(svg_path, png_path):
     """Rasterize with the pre-installed headless Chromium (no imaging library available here)."""
     import glob, re, subprocess
-    chrome = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
+    from svg2eps import find_chrome
+    chrome = find_chrome()
     if chrome is None:
         return False
     txt = open(svg_path).read()

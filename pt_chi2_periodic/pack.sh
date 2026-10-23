@@ -7,7 +7,7 @@ cd "$(dirname "$0")"                                # run from the project folde
 NAME=pt_chi2_periodic
 STAGE=dist/$NAME
 rm -rf dist && mkdir -p "$STAGE"/{results,figures/png}   # fresh staging tree
-cp -v *.py pack.sh README.md REPRODUCE.md "$STAGE"/                    # sources, this script, documentation
+cp -v *.py pack.sh README.md REPRODUCE.md SESSION.md TOOLS_NEEDED.md "$STAGE"/                    # sources, this script, documentation
 cp -v results/*.json results/*.npz "$STAGE"/results/      # computed data (JSON is plain text)
 cp -v figures/*.svg "$STAGE"/figures/                     # vector figures
 cp -v figures/png/*.png "$STAGE"/figures/png/ 2>/dev/null || true   # raster copies, if Chromium was available

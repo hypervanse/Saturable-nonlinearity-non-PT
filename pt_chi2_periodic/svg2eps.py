@@ -7,11 +7,26 @@ import os
 import re
 import subprocess
 
-CHROME = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
+
+def find_chrome():
+    """headless Chromium: $CHROME, else the Playwright build of the cloud container, else a browser on PATH"""
+    import shutil
+    if os.environ.get('CHROME'):
+        return os.environ['CHROME']
+    hits = glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome')
+    if hits:
+        return hits[0]
+    for name in ('chromium', 'chromium-browser', 'google-chrome', 'google-chrome-stable'):
+        if shutil.which(name):
+            return shutil.which(name)
+    return None
+
+
+CHROME = find_chrome()
 
 
 def convert(svg, preview_dir=None):
-    assert CHROME, 'headless Chromium not found (edit the glob in svg2eps.py)'
+    assert CHROME, 'headless Chromium not found: set CHROME=/path/to/chrome'
     base = svg[:-4]
     txt = open(svg).read()
     w, h = map(float, re.search(r"width='([\d.]+)' height='([\d.]+)'", txt).groups())

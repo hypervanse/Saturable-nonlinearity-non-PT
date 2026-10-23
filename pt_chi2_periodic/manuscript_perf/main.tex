@@ -57,8 +57,9 @@ order of gain per effort, with the measurements that justify each.
 \section{Introduction}
 The companion paper \cite{Paper1} revisits the solitons of Ref.~\cite{MKM2013} with a numerical
 chain written from scratch in Python \cite{NumPy2020}. The build environment had four cores of an
-\cpuName, no GPU, no SciPy, no compiler toolchain for extensions, and no network access. The code
-therefore implements every algorithm explicitly on top of NumPy \numpyVer\ and its bundled OpenBLAS.
+\cpuName, no GPU, no SciPy or Numba, and no network access. A C compiler was present but deliberately
+not used. The code therefore implements every algorithm explicitly on top of NumPy \numpyVer\ and
+its bundled OpenBLAS.
 
 Two production runs were slow enough to shape the study. Tracing five third-gap families with
 spectra at every second point took 46 minutes. The convergence study that decides which growth

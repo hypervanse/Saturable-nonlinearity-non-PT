@@ -25,8 +25,9 @@ for fn in (mf.fig_bands, mf.fig_semiinf, mf.fig_thirdgap, mf.fig_validation, mf.
     fn()                                                # writes OUT/<name>.svg
     print('svg:', fn.__name__)
 
-chrome = (glob.glob('/opt/pw-browsers/chromium-*/chrome-linux/chrome') or [None])[0]
-assert chrome, 'headless Chromium not found (edit the glob above)'
+from svg2eps import find_chrome                         # noqa: E402
+chrome = find_chrome()
+assert chrome, 'headless Chromium not found: set CHROME=/path/to/chrome'
 
 for svg in sorted(glob.glob(os.path.join(OUT, '*.svg'))):
     base = svg[:-4]
