@@ -50,6 +50,7 @@ nor stability.
 | box | `newton_fd.Grid` | periodic box [−L, L), L a multiple of π/2 (mirror symmetry also about ξ = L) | Dirichlet walls break the PT symmetry of the *finite* lattice; its spectrum turns complex (1.3e-2 measured at L = 16π) and pollutes stability |
 | continuation | `newton_fd.continuation`, `pipeline.trace_branch` | α from 0 to the target, then b along the branch; secant predictor | the shooting is done for the conservative case only (as in the paper) |
 | stability | `stability.py` | dense spectrum of the 4×4 block operator (paper Eq. 14 in our convention) on the **same grid and the same d² matrix** | otherwise the double zero eigenvalue splits by ~√residual and fakes instability |
+| fast spectra (optional) | `stability.growth_arnoldi` | shift-invert Arnoldi: only eigenvalues near given shifts; sparse LU if SciPy is present (use `deriv='fd4'`), else one dense inverse | the dense eigensolver costs ~25 n³; a sparse LU is ~O(n), and a single shift next to a known eigenvalue refines it on a larger box in a fraction of the time (`validate_arnoldi.py`) |
 | box artefacts | `stability.growth_cap` | complex absorbing layer −iΓ(ξ) at the box edge; growth = max Im λ | box modes acquire Im λ < 0; localized and radiating internal modes keep theirs. Cross-checked with an eigenvector edge-amplitude criterion (`stability.analyze`) |
 | propagation | `ssf.py` | Strang (2nd order) or Yoshida (4th order) splitting; exact dispersion in Fourier space; local χ⁽²⁾ + potential step by RK4; optional absorber | linear part exact, nonlinear χ⁽²⁾ step has no closed form (unlike Kerr) |
 
@@ -147,4 +148,26 @@ run_bands.py, run_semiinf.py, run_thirdgap.py     production runs -> results/*.j
 validate.py, validate_weak.py                     checks -> results/validation.json, results/weak.json
 make_figures.py, svgplot.py                       figures/*.svg (+ figures/png/*.png)
 build_report.py                                   report.html
+run_convergence.py                                third-gap growth rates vs h, L, absorber -> results/convergence.json
+validate_arnoldi.py                               shift-invert Arnoldi vs dense eigensolver -> results/arnoldi.json
+make_tables.py, make_eps.py                       manuscript tables (from results/*.json) and EPS/PDF figures
+manuscript/                                       LaTeX draft (main.tex, refs.bib, Makefile, check_tex.py, PLAN.md)
+bench_perf.py, make_perf.py, svg2eps.py            performance measurements -> results/perf.json -> paper 2
+manuscript_perf/                                  paper 2: where the time goes (diagrams, cost model, recommendations)
 ```
+
+## 6. Manuscript
+
+`manuscript/` holds a draft paper built from these results: REVTeX 4.2 source, bibliography, vector
+EPS figures (with PDF copies), and tables written by `make_tables.py` straight from `results/*.json`.
+**`manuscript/PLAN.md`** has the claims register (reproduced / correction / new / open, with the
+evidence and confidence for each), the computations still to do before submission, the authorship
+note, and the arXiv steps. No TeX was available where it was written: `make check` runs static
+checks, and `make` builds the PDF on any machine with TeX Live.
+
+`manuscript_perf/` is a second paper on the computation itself: which resource bounds each stage
+(dense eigensolver vs interpreter overhead), measured kernel scaling and thread efficiency, the task
+graph of the convergence study, a calibrated scheduling model, and ranked recommendations
+(process-level parallelism, Arnoldi refinement, sparse factorization, batching). Every number in it
+is a macro in `numbers.tex`, written by `make_perf.py` from `results/perf.json` (`bench_perf.py`,
+about 10 minutes on an idle machine).

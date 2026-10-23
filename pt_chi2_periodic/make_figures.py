@@ -13,6 +13,8 @@ os.makedirs('figures', exist_ok=True)
 RED, BLUE, GREEN, GREY = '#d62728', '#1f5fbf', '#2ca02c', '#bdbdbd'
 GTOL = 5e-5          # growth below this (wide solitons touching the box) is treated as zero
 REMAX = 3.0          # |Re lam| above this: high-frequency, box-size-dependent growth (marked separately)
+IMRE, IMG = 0.05, 1e-3   # purely imaginary (|Re lam| < IMRE) AND weaker than IMG: near-edge box artefact --
+                         # these rates fall 6-18x from L = 40 pi to 56 pi (results/convergence.json)
 
 
 def cplx(a):
@@ -114,7 +116,7 @@ def branch_arrays(points):
         gm, lu = p.get('gmax'), p.get('lam_unst')
         if gm is None:
             glo.append(None); ghi.append(None); continue
-        hi = lu is not None and abs(lu[0]) > REMAX
+        hi = lu is not None and (abs(lu[0]) > REMAX or (abs(lu[0]) < IMRE and gm < IMG))
         glo.append(0.0 if hi else gm)
         ghi.append(gm if hi else 0.0)
     o = np.argsort(b)
@@ -218,7 +220,7 @@ def fig_thirdgap():
     fig = Figure(1060, 470, title="Third finite gap, q = 0: fundamental soliton branches  -- cf. paper Fig. 5")
     ax = fig.add(80, 50, 520, 340, (-1.3, -1.0), (0, 2.5), xlabel='b', ylabel='P')
     gr = fig.add(690, 50, 330, 340, (-1.3, -1.0), (1e-5, 1), xlabel='b', ylabel='max Im λ', logy=True,
-                 title='growth rate (filled: internal mode; open: high-frequency)')
+                 title='growth rate (filled: internal mode; open: box-dependent)')
     ax.vspan(-2, m['b_sh'], GREY, 0.8)
     cols = {'0.0': '#7f0000', '0.7': '#d62728', '0.7919': '#ff7f0e', '0.9': '#9467bd', '0.95': '#1f5fbf'}
     for key, B in T['branches'].items():

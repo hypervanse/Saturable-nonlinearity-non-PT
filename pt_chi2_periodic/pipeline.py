@@ -16,7 +16,7 @@ import numpy as np
 from shooting import tails, nested_flowchart, newton_polish, profile_from_shot
 from spline import spline_resample
 from newton_fd import Grid, solve, continuation, full_line, power_half
-from stability import analyze, growth_cap
+from stability import analyze, growth_cap, growth_arnoldi
 from ssf import propagate, absorber
 
 
@@ -59,11 +59,16 @@ def fourier_refine(x, f, factor=4):
     return xf, np.fft.ifft(np.fft.ifftshift(pad)) * factor
 
 
-def stability_of(g, rec, par, g0=1.0):
-    """Linear stability with an absorbing layer (see stability.growth_cap):
-    returns dict(gmax, lam_unst, lam) -- gmax = max Im(lam), 0 if below 1e-6."""
+def stability_of(g, rec, par, g0=1.0, method='dense', shifts=None):
+    """Linear stability with an absorbing layer: returns dict(gmax, lam_unst, lam) -- gmax =
+    max Im(lam), 0 if below 1e-6.  method='dense': all eigenvalues (stability.growth_cap);
+    method='arnoldi': shift-invert Arnoldi near `shifts` (default scan |Re lam| <= 3, or
+    [lam_guess] to refine a known eigenvalue; stability.growth_arnoldi), lam = eigenvalues found."""
     x, W1, W2 = full_line(g, rec['w1'], rec['w2'])
-    gm, lu, lam = growth_cap(x, W1, W2, par, g.D2, g0=g0)
+    if method == 'arnoldi':
+        gm, lu, lam = growth_arnoldi(x, W1, W2, par, g.D2, g0=g0, shifts=shifts)
+    else:
+        gm, lu, lam = growth_cap(x, W1, W2, par, g.D2, g0=g0)
     return dict(gmax=gm, lam_unst=(complex(lu) if gm > 0 else None), lam=lam)
 
 

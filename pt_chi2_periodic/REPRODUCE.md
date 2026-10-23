@@ -15,10 +15,19 @@ python3 run_bands.py                    # Floquet band edges          -> results
 python3 run_semiinf.py                  # semi-infinite gap, cases 1-3 -> results/semiinf.json   (~35 min)
 python3 run_thirdgap.py                 # third finite gap             -> results/thirdgap.json  (~45 min)
 python3 validate_weak.py                # weak instabilities by seeded propagation -> results/weak.json (~15 min)
+python3 validate_arnoldi.py             # Arnoldi vs dense spectra (+ SciPy sparse path if installed) -> results/arnoldi.json (~10 min)
 
 # 4. pictures and the report page
 python3 make_figures.py                 # figures/*.svg (+ figures/png/*.png if headless Chromium exists)
 python3 build_report.py                 # report.html (open in any browser)
+```
+
+```bash
+# 5. manuscript (optional): convergence data, tables, EPS figures, then LaTeX
+python3 run_convergence.py              # third-gap rates vs h, L, absorber -> results/convergence.json (~30 min)
+python3 make_tables.py                  # manuscript/tables/*.tex, every number read from results/*.json
+python3 make_eps.py                     # manuscript/figures/*.eps + *.pdf (headless Chromium + poppler's pdftocairo)
+cd manuscript && make check && make     # static checks, then latex+bibtex+dvips (needs TeX Live)
 ```
 
 The `results/` folder in the bundle already holds the outputs of these runs, so steps 4 alone
@@ -118,6 +127,7 @@ print(r['P'][0], r['P'][-1])        # power stays put for a stable soliton
 | `inner_root: could not bracket` with very large \|c2\| | SH decays faster than w1⁴ (\|μ2\| < \|μ1\|⁴) | shoot from a shorter distance (`n = 4` instead of 6) |
 | shooting converges to a multi-hump state, Newton then fails in α | wrong lattice centring | `x0 = pi/2` (finite gaps) |
 | branch stops: "solution reaches the box edge" | soliton near a band edge is wider than the box | larger `L` (keep `L` a multiple of π/2), or a larger `tail_tol` in `trace_branch` |
+| stability spectra too slow (large L) | dense eigensolver is O(n³), n = 4M | `pip install scipy`, use `Grid(..., deriv='fd4')` and `stability_of(..., method='arnoldi')` (sparse LU + shift-invert Arnoldi, eigenvalues with \|Re λ\| ≤ 3); to refine one known eigenvalue pass `shifts=[lam_guess]`. Without SciPy the same call uses a dense inverse (3–5× faster than the full spectrum in target mode, slower in scan mode) |
 | spurious tiny complex eigenvalues | Dirichlet walls / finite box | already handled: periodic box + absorbing layer (`stability.growth_cap`); confirm a suspicious rate by changing `L` and `g0`, and by `validate_weak.check` |
 
 ## 6. Map from the thesis / paper to the code

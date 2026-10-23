@@ -13,6 +13,10 @@ import zlib
 import numpy as np
 
 FONT = "font-family='Helvetica, Arial, sans-serif'"
+# Manuscript mode (set by make_eps.py): no figure title or notes -- the LaTeX caption carries them --
+# and the page is cropped to the panels; save() then writes into OUTDIR under the same file name.
+PAPER = False
+OUTDIR = None
 COLORS = ['#1f5fbf', '#d62728', '#2ca02c', '#9467bd', '#ff7f0e', '#17becf', '#8c564b', '#e377c2']
 
 # viridis, 9 anchor colours (interpolated linearly)
@@ -41,6 +45,8 @@ def png_bytes(rgb):
 
 def nice_ticks(lo, hi, n=5):
     """Round tick positions covering [lo, hi] (1-2-5 steps)."""
+    if lo > hi:                       # reversed axis (e.g. matrix rows downward): same ticks
+        return nice_ticks(hi, lo, n)
     if hi <= lo:
         return [lo]
     raw = (hi - lo) / n
@@ -66,15 +72,19 @@ def fmt(v):
 
 
 class Axes:
-    def __init__(self, fig, x, y, w, h, xlim, ylim, xlabel='', ylabel='', title='', logy=False):
+    def __init__(self, fig, x, y, w, h, xlim, ylim, xlabel='', ylabel='', title='', logy=False, logx=False):
         self.fig, self.x, self.y, self.w, self.h = fig, x, y, w, h
-        self.xlim, self.ylim, self.logy = xlim, ylim, logy
+        self.xlim, self.ylim, self.logy, self.logx = xlim, ylim, logy, logx
         self.items = []
         self.xlabel, self.ylabel, self.title = xlabel, ylabel, title
         self.legend_items = []
 
     def X(self, v):
-        return self.x + (np.asarray(v, float) - self.xlim[0]) / (self.xlim[1] - self.xlim[0]) * self.w
+        v = np.asarray(v, float)
+        lo, hi = self.xlim
+        if self.logx:
+            v, lo, hi = np.log10(np.maximum(v, 1e-300)), math.log10(lo), math.log10(hi)
+        return self.x + (v - lo) / (hi - lo) * self.w
 
     def Y(self, v):
         v = np.asarray(v, float)
@@ -143,8 +153,13 @@ class Axes:
         o.append(f"<clipPath id='{cid}'><rect x='{self.x}' y='{self.y}' width='{self.w}' height='{self.h}'/></clipPath>")
         o.append(f"<rect x='{self.x}' y='{self.y}' width='{self.w}' height='{self.h}' fill='white' stroke='none'/>")
         o.append(f"<g clip-path='url(#{cid})'>" + ''.join(self.items) + "</g>")
+        o.extend(getattr(self, 'outside', []))          # annotations allowed outside the panel (not clipped)
         o.append(f"<rect x='{self.x}' y='{self.y}' width='{self.w}' height='{self.h}' fill='none' stroke='#333' stroke-width='1'/>")
-        for t in nice_ticks(*self.xlim):
+        if self.logx:
+            xt = [10 ** e for e in range(math.ceil(math.log10(self.xlim[0])), math.floor(math.log10(self.xlim[1])) + 1)]
+        else:
+            xt = nice_ticks(*self.xlim)
+        for t in xt:
             X = float(self.X(t))
             o.append(f"<line x1='{X:.1f}' y1='{self.y + self.h}' x2='{X:.1f}' y2='{self.y + self.h + 4}' stroke='#333'/>")
             o.append(f"<text x='{X:.1f}' y='{self.y + self.h + 16}' font-size='10' text-anchor='middle' {FONT}>{fmt(t)}</text>")
@@ -152,7 +167,7 @@ class Axes:
             yt = [10 ** e for e in range(math.ceil(math.log10(self.ylim[0])), math.floor(math.log10(self.ylim[1])) + 1)]
         else:
             yt = nice_ticks(*self.ylim)
-        for t in yt:
+        for t in ([] if getattr(self, 'noyticks', False) else yt):     # noyticks: categorical axis
             Y = float(self.Y(t))
             o.append(f"<line x1='{self.x - 4}' y1='{Y:.1f}' x2='{self.x}' y2='{Y:.1f}' stroke='#333'/>")
             o.append(f"<text x='{self.x - 6}' y='{Y + 3.5:.1f}' font-size='10' text-anchor='end' {FONT}>{fmt(t)}</text>")
@@ -202,14 +217,29 @@ class Figure:
         self.notes.append(f"<text x='{x}' y='{y}' font-size='{size}' fill='{color}' text-anchor='{anchor}'{fw} {FONT}>{s}</text>")
 
     def svg(self):
-        head = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 {self.w} {self.h}' "
-                f"width='{self.w}' height='{self.h}'>")
-        body = [f"<rect width='{self.w}' height='{self.h}' fill='white'/>"]
+        x0, y0, w, h = 0, 0, self.w, self.h
+        if PAPER:
+            # bounding box of the panels incl. tick labels (10 px), axis labels (y: x-42, x: y+h+32),
+            # panel titles (y-8) and colour bars (x+w+8 .. +65)
+            render = [ax.render() for ax in self.axes]            # render first: colour bars are set lazily
+            x0 = max(0, min(a.x - getattr(a, 'pad_left', 58 if a.ylabel else 40) for a in self.axes))
+            y0 = max(0, min(a.y - (22 if a.title else 8) for a in self.axes))
+            x1 = min(self.w, max(a.x + a.w + (68 if hasattr(a, 'cbar') else 14) for a in self.axes))
+            y1 = min(self.h, max(a.y + a.h + (40 if a.xlabel else 24) for a in self.axes))
+            w, h = x1 - x0, y1 - y0
+        head = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='{x0} {y0} {w} {h}' "
+                f"width='{w}' height='{h}'>")
+        body = [f"<rect x='{x0}' y='{y0}' width='{w}' height='{h}' fill='white'/>"]
+        if PAPER:
+            return head + '\n'.join(body + render) + '</svg>'
         if self.title:
             body.append(f"<text x='{self.w / 2}' y='20' font-size='14' font-weight='bold' text-anchor='middle' {FONT}>{self.title}</text>")
         body += [ax.render() for ax in self.axes] + self.notes
         return head + '\n'.join(body) + '</svg>'
 
     def save(self, path):
+        if PAPER and OUTDIR:
+            import os
+            path = os.path.join(OUTDIR, os.path.basename(path))
         with open(path, 'w') as f:
             f.write(self.svg())

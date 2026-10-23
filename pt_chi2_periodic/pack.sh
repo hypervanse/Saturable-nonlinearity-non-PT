@@ -12,6 +12,13 @@ cp -v results/*.json results/*.npz "$STAGE"/results/      # computed data (JSON 
 cp -v figures/*.svg "$STAGE"/figures/                     # vector figures
 cp -v figures/png/*.png "$STAGE"/figures/png/ 2>/dev/null || true   # raster copies, if Chromium was available
 cp -v report.html "$STAGE"/                               # self-contained report page
+cp -r manuscript "$STAGE"/                                # LaTeX draft, refs.bib, EPS/PDF figures, tables, PLAN.md
+rm -f "$STAGE"/manuscript/figures/*.svg                   # intermediate SVGs: EPS/PDF are the deliverables
+cp -r manuscript_perf "$STAGE"/                           # performance paper: LaTeX, numbers.tex, tables, EPS/PDF
+rm -f "$STAGE"/manuscript_perf/figures/*.svg
+for d in manuscript manuscript_perf; do                  # TeX build leftovers, if any
+  rm -f "$STAGE"/$d/main.{aux,log,out,dvi,ps,blg} "$STAGE"/$d/arxiv.tar.gz
+done
 (cd dist && zip -r -q -9 "$NAME.zip" "$NAME")             # -r recurse, -q quiet, -9 max compression
 ls -la dist/"$NAME.zip"
 if [ "${1:-}" != "" ]; then                               # optional mirror into a checkout
