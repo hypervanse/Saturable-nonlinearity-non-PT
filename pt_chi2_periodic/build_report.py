@@ -68,7 +68,9 @@ table = ''.join(f"<tr><td>{a}</td><td>{b}</td><td class='num'>{x}</td></tr>" for
 
 g_c3 = sp['case3_b0.21']['gmax']
 g_gap = ts['b-1.207']['gmax']
-g_a0 = branch_growth(T['branches']['0.0']['points'], -1.25, -1.15)
+_a0 = [p for p in T['branches']['0.0']['points'] if p.get('gmax') is not None]   # alpha = 0 points with a spectrum
+g_a0, g_a0_min = max(p['gmax'] for p in _a0), min(p['gmax'] for p in _a0)
+b_a0 = (min(p['b'] for p in _a0), max(p['b'] for p in _a0))
 
 val_rows = ''
 if V:
@@ -192,7 +194,8 @@ pre {{ background: var(--panel); border: 1px solid var(--line); border-radius: 6
 <section class="prose">
   <h2>Where the results differ from the paper</h2>
   <p class="finding"><strong>Third finite gap, α = 0.</strong> The branch the paper draws as stable
-  (Fig. 5) has an oscillatory instability, with growth up to {g_a0:.3f} for b between −1.25 and −1.15.
+  (Fig. 5) has an oscillatory instability at every computed point, b from {b_a0[0]:.3f} to {b_a0[1]:.3f},
+  with growth {g_a0_min:.3f} to {g_a0:.3f} (smallest near the band edge).
   An absorbing layer of any strength gives the same rate, and direct propagation confirms it: the
   deviation grows at 0.028 against Im λ = 0.028 at b = −1.197. The unstable eigenvector keeps an
   oscillating tail. That fits an internal mode resonating with the opposite-signature continuum, which

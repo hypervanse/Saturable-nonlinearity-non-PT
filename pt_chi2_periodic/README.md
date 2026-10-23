@@ -69,7 +69,7 @@ Step-by-step guide with expected outputs and troubleshooting: **REPRODUCE.md**.
 python3 validate.py        # ~5 min: convergence/consistency checks -> results/validation.json
 python3 run_bands.py       # ~2 min: Floquet band edges (Fig. 1)
 python3 run_semiinf.py     # ~25 min: semi-infinite gap, cases 1-3 (Figs. 3, 4, 7, 18)
-python3 run_thirdgap.py    # ~60 min: third finite gap (Figs. 5, 6, 8)
+python3 run_thirdgap.py    # ~45 min: third finite gap (Figs. 5, 6, 8)
 python3 make_figures.py    # SVG figures in figures/ (+ PNG via headless Chromium if present)
 ```
 
@@ -114,7 +114,8 @@ br  = continuation(g, w1, w2, par, 'al', np.arange(0.05, 0.701, 0.05))   # switc
 2. **Third-gap centring.** The fundamental third-gap soliton sits at ξ₀ = π/2 (potential minimum).
    Centred at ξ = 0, shooting only finds multi-hump, high-power states.
 3. **Third gap, α = 0, is not stable.** Fig. 5 draws this branch thick. Here it has an
-   oscillatory instability, growth 0.015–0.09 along the branch (0.028 at b = −1.197). Evidence:
+   oscillatory instability at every computed point (b = −1.282 … −1.077), growth 0.006–0.087
+   along the branch (0.028 at b = −1.197). Evidence:
    the same rate without an absorbing layer (0.0289) and with layers of strength 0.25 and 1
    (0.0277, 0.0281); direct propagation with 1e-4 noise grows at 0.028. The eigenvector has an
    oscillating tail: an internal mode resonating with the opposite-signature continuum, which
