@@ -1,7 +1,8 @@
 """
 model.py -- the chi(2) system with a PT-symmetric periodic potential on the FF.
 
-Reference: F. C. Moreira, V. V. Konotop, B. A. Malomed, PRA 87, 013832 (2013).
+Methods: PhD thesis of F. C. Moreira.  Model and figures compared with:
+F. C. Moreira, V. V. Konotop, B. A. Malomed, PRA 87, 013832 (2013).
 
 SIGN CONVENTION (read this first)
 ---------------------------------

@@ -3,8 +3,13 @@
 Working title: *Gap solitons in a χ⁽²⁾ waveguide with a PT-symmetric lattice revisited: edge shooting,
 symmetric Newton continuation, and spectral stability*.
 
-Authors (as requested): **F. C. Moreira** and **Claude Opus 5.5** (Anthropic; work done in Claude Code).
-Read §6 before submitting: arXiv does not accept AI systems as authors.
+Author: **F. C. Moreira** (sole author). The AI's part (Claude Opus 5.5 in Claude Code) is stated
+under "Use of AI" in the acknowledgments; see §6.
+
+Source material in the session: the PDF of PRA 87, 013832 (2013), and three screenshots of the
+thesis (Fig. 3.1 flowchart, p. 19; Sec. 6.4, p. 76; Fig. 6.5, p. 78). The full thesis was not
+available, so every figure comparison in `main.tex` is with the PRA article. Thesis Fig. 6.5
+belongs to the localized-potential model of thesis Ch. 6, which is not part of this study.
 
 Status: a complete first draft (`main.tex`) with references (`refs.bib`), vector EPS figures (PDF copies
 too), and tables generated from the data. **It has not been compiled.** The build container had no TeX
@@ -39,7 +44,7 @@ make figures               # regenerate tables + figures from ../results/*.json
 ```
 
 Switches at the top of `main.tex`:
-* `\aiauthortrue` / `\aiauthorfalse`: authorship (see §6).
+* `\aiauthorfalse` (default) / `\aiauthortrue`: authorship (see §6).
 * `\showtodostrue` / `\showtodosfalse`: red `[TODO: …]` markers.
 
 ## 3. Claims register: what to check, and how sure each claim is
@@ -102,15 +107,13 @@ Each new result must enter the paper through `results/*.json` → `make_tables.p
 
 ## 6. Authorship, AI use, and responsibility
 
-* **Requested:** F. C. Moreira and Claude Opus 5.5. `main.tex` has this author list by default (`\aiauthortrue`).
-* **arXiv policy (as known up to the model's training):** generative AI tools do not qualify for authorship. Their use
-  should be disclosed, and the human authors take full responsibility for the content. APS journals have the same
-  rule. A submission listing an AI as author is likely to be put on hold.
-* **One-line fix:** `\aiauthorfalse`. This removes the second author and prints a "Use of AI" statement in the
-  acknowledgments. The statement says the code, computations, figures and a first draft were produced by the AI under
-  the direction of F. C. Moreira, who reviewed the results and is responsible for the content.
-* **Also consider:** the 2013 co-authors (V. V. Konotop, B. A. Malomed). The paper corrects their joint work, and
-  informing them or inviting them is usual practice.
+* **Author: F. C. Moreira, sole author** (decided). Both manuscripts default to `\aiauthorfalse`: one author,
+  plus a "Use of AI" statement in the acknowledgments. The statement says the code, computations, figures and a
+  first draft were produced by Claude Opus 5.5 (Anthropic) in Claude Code under the direction of F. C. Moreira,
+  who reviewed the results and is responsible for the content.
+* This matches arXiv and APS policy as known up to the model's training: generative AI tools do not qualify
+  for authorship, their use is disclosed, and the human author is responsible for the content.
+* `\aiauthortrue` would list the AI as a second author; it is kept only as a switch.
 
 ## 7. Review checklist (things only the author can verify)
 
@@ -121,13 +124,12 @@ Each new result must enter the paper through `results/*.json` → `make_tables.p
 - [ ] Every `[memory]` entry in `refs.bib`: volume, page and year; add DOIs.
 - [ ] Affiliation, funding, acknowledgments (red TODOs).
 - [ ] Figure set: 10 full-width figures is long for PRA. Candidates to move to a supplement: Fig. 2 (shooting), Fig. 3 (validation), Figs. 7–8 (case 1 and 3 dynamics).
-- [ ] Decide §6 (author list).
 - [ ] Archive the code and data with a DOI (Zenodo) and put it in "Data and code availability".
 
 ## 8. arXiv submission
 
 1. `make` (check the log for warnings), read `main.pdf`.
-2. Set `\showtodosfalse` and choose `\aiauthorfalse` (§6). Run `make` again.
+2. Set `\showtodosfalse` (authorship is already `\aiauthorfalse`, §6). Run `make` again.
 3. `make arxiv` → upload `arxiv.tar.gz` (latex + dvips route, EPS figures, `.bbl` included).
 4. Categories: primary `physics.optics`, cross-list `nlin.PS`.
 5. Abstract field: plain text (copy from `main.tex` without LaTeX commands).

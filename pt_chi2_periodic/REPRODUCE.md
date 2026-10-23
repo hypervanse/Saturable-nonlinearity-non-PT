@@ -130,9 +130,9 @@ print(r['P'][0], r['P'][-1])        # power stays put for a stable soliton
 | stability spectra too slow (large L) | dense eigensolver is O(n³), n = 4M | `pip install scipy`, use `Grid(..., deriv='fd4')` and `stability_of(..., method='arnoldi')` (sparse LU + shift-invert Arnoldi, eigenvalues with \|Re λ\| ≤ 3); to refine one known eigenvalue pass `shifts=[lam_guess]`. Without SciPy the same call uses a dense inverse (3–5× faster than the full spectrum in target mode, slower in scan mode) |
 | spurious tiny complex eigenvalues | Dirichlet walls / finite box | already handled: periodic box + absorbing layer (`stability.growth_cap`); confirm a suspicious rate by changing `L` and `g0`, and by `validate_weak.check` |
 
-## 6. Map from the thesis / paper to the code
+## 6. Map from the thesis (F. C. Moreira) and the PRA 87 article to the code
 
-| thesis / paper | code |
+| thesis / article | code |
 |---|---|
 | Fig. 3.1 flowchart (C2 at fixed C1, then C1) | `shooting.flowchart_root`, `shooting.nested_flowchart` |
 | RK of order 4 and 5, error = max difference, step refinement | `rk45.rkf45` |

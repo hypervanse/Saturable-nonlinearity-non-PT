@@ -1,9 +1,12 @@
 # Gap solitons in a χ⁽²⁾ waveguide with a PT-symmetric periodic potential
 
-Pure-numpy implementation of the numerical methods of the thesis / paper
+Pure-numpy implementation of the numerical methods of the PhD thesis of **F. C. Moreira** (sole
+author), applied to the periodic model of the article
 
 > F. C. Moreira, V. V. Konotop, B. A. Malomed, *Solitons in PT-symmetric periodic systems with the
-> quadratic nonlinearity*, Phys. Rev. A **87**, 013832 (2013)
+> quadratic nonlinearity*, Phys. Rev. A **87**, 013832 (2013),
+
+whose figures the results are compared with.
 
 namely: **edge shooting** with an adaptive Runge–Kutta–Fehlberg 4(5) integrator (thesis Fig. 3.1
 flowchart), **cubic-spline** transfer to a uniform grid, **Newton–Raphson** on a symmetric
